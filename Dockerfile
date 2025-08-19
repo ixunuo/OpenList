@@ -14,20 +14,17 @@ FROM openlistteam/openlist-base-image:${BASE_IMAGE_TAG}
 LABEL MAINTAINER="OpenList"
 ARG INSTALL_FFMPEG=false
 ARG INSTALL_ARIA2=false
-ARG USER=openlist
-ARG UID=1001
-ARG GID=1001
 
 WORKDIR /opt/openlist/
 
-RUN addgroup -g ${GID} ${USER} && \
-    adduser -D -u ${UID} -G ${USER} ${USER} && \
+RUN addgroup -g 1001 openlist && \
+    adduser -D -u 1001 -G openlist openlist && \
     mkdir -p /opt/openlist/data
 
-COPY --from=builder --chmod=755 --chown=${UID}:${GID} /app/bin/openlist ./
-COPY --chmod=755 --chown=${UID}:${GID} entrypoint.sh /entrypoint.sh
+COPY --from=builder --chmod=755 --chown=1001:1001 /app/bin/openlist ./
+COPY --chmod=755 --chown=1001:1001 entrypoint.sh /entrypoint.sh
 
-USER ${USER}
+USER openlist
 RUN /entrypoint.sh version
 
 ENV UMASK=022 RUN_ARIA2=${INSTALL_ARIA2}
