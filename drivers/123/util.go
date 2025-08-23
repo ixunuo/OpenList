@@ -238,6 +238,50 @@ do:
 	return body, nil
 }
 
+func (d *Pan123) Download(url string, method string, callback base.ReqCallback, resp interface{}) ([]byte, error) {
+	isRetry := false
+do:
+	req := base.RestyClient.R()
+	req.SetHeaders(map[string]string{
+		"origin":        "https://www.123pan.com",
+		"referer":       "https://www.123pan.com/",
+		"authorization": "Bearer " + d.AccessToken,
+		"user-agent":    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) openlist-client",
+		"platform":      "android",
+		"app-version":   "3",
+		//"user-agent":    base.UserAgent,
+	})
+	if callback != nil {
+		callback(req)
+	}
+	if resp != nil {
+		req.SetResult(resp)
+	}
+	//authKey, err := authKey(url)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//req.SetQueryParam("auth-key", *authKey)
+	res, err := req.Execute(method, GetApi(url))
+	if err != nil {
+		return nil, err
+	}
+	body := res.Body()
+	code := utils.Json.Get(body, "code").ToInt()
+	if code != 0 {
+		if !isRetry && code == 401 {
+			err := d.login()
+			if err != nil {
+				return nil, err
+			}
+			isRetry = true
+			goto do
+		}
+		return nil, errors.New(jsoniter.Get(body, "message").ToString())
+	}
+	return body, nil
+}
+
 func (d *Pan123) getFiles(ctx context.Context, parentId string, name string) ([]File, error) {
 	page := 1
 	total := 0

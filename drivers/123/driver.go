@@ -73,7 +73,7 @@ func (d *Pan123) Link(ctx context.Context, file model.Obj, args model.LinkArgs) 
 			"size":      f.Size,
 			"type":      f.Type,
 		}
-		resp, err := d.Request(DownloadInfo, http.MethodPost, func(req *resty.Request) {
+		resp, err := d.Download(DownloadInfo, http.MethodPost, func(req *resty.Request) {
 
 			req.SetBody(data)
 		}, nil)
